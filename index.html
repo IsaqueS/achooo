@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Achooo! — fotos de imóvel endireitadas</title>
+  <meta name="description" content="Coloque as fotos do imóvel e elas saem endireitadas, com perspectiva, cor e luz corrigidas. Tudo no seu navegador.">
+  <meta name="theme-color" content="#1a1718">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23dc1e20'/%3E%3Crect x='8' y='24' width='48' height='16' rx='8' fill='%23000'/%3E%3Crect x='22' y='27' width='20' height='10' rx='5' fill='%23ffffff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="bg-checker" aria-hidden="true"></div>
+
+  <!-- rabiscos (doodles) reutilizáveis -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <filter id="sketch">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="2" seed="3"/>
+        <feDisplacementMap in="SourceGraphic" scale="3.5"/>
+      </filter>
+      <symbol id="d-house" viewBox="0 0 80 80"><path d="M8 40 40 12l32 28M17 33v37h46V33M34 70V51h12v19M22 42h9v8h-9z"/></symbol>
+      <symbol id="d-camera" viewBox="0 0 80 80"><rect x="8" y="24" width="64" height="42" rx="6"/><path d="M26 24l6-9h16l6 9"/><circle cx="40" cy="45" r="13"/><circle cx="40" cy="45" r="5"/><path d="M60 32h5"/></symbol>
+      <symbol id="d-frame" viewBox="0 0 80 80"><rect x="12" y="10" width="56" height="60"/><rect x="20" y="18" width="40" height="44"/><path d="M20 54l11-11 9 8 6-6 14 13"/><circle cx="49" cy="29" r="4"/></symbol>
+      <symbol id="d-level" viewBox="0 0 80 80"><rect x="4" y="29" width="72" height="22" rx="4"/><rect x="28" y="33" width="24" height="14" rx="7"/><circle cx="40" cy="40" r="3.5"/><path d="M34 33v14M46 33v14M10 29v-5M70 29v-5"/></symbol>
+      <symbol id="d-key" viewBox="0 0 80 80"><circle cx="22" cy="40" r="13"/><circle cx="22" cy="40" r="4"/><path d="M35 40h38M63 40v11M71 40v8"/></symbol>
+      <symbol id="d-sofa" viewBox="0 0 80 80"><path d="M14 42V30q0-6 6-6h40q6 0 6 6v12"/><rect x="6" y="40" width="12" height="20" rx="4"/><rect x="62" y="40" width="12" height="20" rx="4"/><path d="M18 50h44M18 60h44M12 60v6M68 60v6"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="top">
+    <h1 class="title" aria-label="Achooo!"><span class="wl" style="--i:0" aria-hidden="true">A</span><span class="wl" style="--i:1" aria-hidden="true">c</span><span class="wl" style="--i:2" aria-hidden="true">h</span><span class="wl" style="--i:3" aria-hidden="true">o</span><span class="wl" style="--i:4" aria-hidden="true">o</span><span class="wl" style="--i:5" aria-hidden="true">o</span><span class="wl" style="--i:6" aria-hidden="true">!</span></h1>
+    <p class="subtitle outline">Fotos de imóvel endireitadas e tratadas automaticamente</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button class="tab" role="tab" id="tab-fotos" aria-selected="true" aria-controls="panel-fotos">Fotos<span class="tab-count" id="tabCount"></span></button>
+    <button class="tab" role="tab" id="tab-ajustes" aria-selected="false" aria-controls="panel-ajustes" tabindex="-1">Ajustes</button>
+    <button class="tab" role="tab" id="tab-ajuda" aria-selected="false" aria-controls="panel-ajuda" tabindex="-1">Como usar</button>
+  </nav>
+
+  <main class="stage">
+    <div class="swirl" id="swirl" aria-hidden="true"></div>
+    <div class="doodles" id="doodles" aria-hidden="true"></div>
+
+    <!-- FOTOS -->
+    <section class="panel" role="tabpanel" id="panel-fotos" aria-labelledby="tab-fotos">
+      <div class="drop" id="drop">
+        <div class="drop-box">
+          <svg class="drop-icon" viewBox="0 0 80 80" aria-hidden="true"><use href="#d-camera"/></svg>
+          <h2 class="outline">Arraste as fotos do imóvel pra cá</h2>
+          <p class="outline drop-or">ou</p>
+          <button class="btn btn-big btn-accent" id="pick" type="button">Escolher fotos</button>
+          <p class="hint outline">Pode escolher todas de uma vez · JPG ou PNG<br>As fotos não saem do seu aparelho</p>
+        </div>
+      </div>
+
+      <div class="work" id="work" hidden>
+        <div class="toolbar">
+          <div class="status">
+            <div class="progress" aria-hidden="true"><i id="bar"></i></div>
+            <span id="statusText" class="outline" role="status" aria-live="polite"></span>
+          </div>
+          <div class="actions">
+            <button class="btn" id="add" type="button">+ Adicionar</button>
+            <button class="btn" id="clear" type="button">Limpar</button>
+            <button class="btn btn-accent" id="zip" type="button" disabled>Baixar todas (.zip)</button>
+          </div>
+        </div>
+        <ul class="grid" id="grid"></ul>
+      </div>
+    </section>
+
+    <!-- AJUSTES -->
+    <section class="panel" role="tabpanel" id="panel-ajustes" aria-labelledby="tab-ajustes" hidden>
+      <div class="settings">
+        <h2 class="section-label outline">Correções automáticas</h2>
+
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title outline">Endireitar</span>
+            <span class="row-desc outline">Deixa portas, paredes e janelas retas.</span>
+          </span>
+          <input type="checkbox" class="switch" role="switch" id="optStraighten" checked>
+        </label>
+
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title outline">Corrigir perspectiva</span>
+            <span class="row-desc outline">Tira o efeito de “parede caindo” quando o celular estava inclinado pra cima ou pra baixo.</span>
+          </span>
+          <input type="checkbox" class="switch" role="switch" id="optPerspective" checked>
+        </label>
+
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title outline">Cor e luz</span>
+            <span class="row-desc outline">Tira o amarelado, clareia ambientes escuros e realça as cores.</span>
+          </span>
+          <input type="checkbox" class="switch" role="switch" id="optColor" checked>
+        </label>
+
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title outline">Nitidez</span>
+            <span class="row-desc outline">Deixa os detalhes um pouco mais definidos.</span>
+          </span>
+          <input type="checkbox" class="switch" role="switch" id="optSharpen" checked>
+        </label>
+
+        <h2 class="section-label outline">Arquivo final</h2>
+
+        <div class="row">
+          <label class="row-text" for="optSize">
+            <span class="row-title outline">Tamanho</span>
+            <span class="row-desc outline">Portais de imóveis costumam pedir até 1920 px.</span>
+          </label>
+          <div class="select-wrap">
+            <select id="optSize" class="select">
+              <option value="4096">Original</option>
+              <option value="2560">Grande (2560 px)</option>
+              <option value="1920">Portais (1920 px)</option>
+              <option value="1280">WhatsApp (1280 px)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <label class="row-text" for="optQuality">
+            <span class="row-title outline">Qualidade do JPG</span>
+            <span class="row-desc outline">Mais alto = arquivo maior.</span>
+          </label>
+          <div class="range-wrap">
+            <input type="range" id="optQuality" min="70" max="100" step="1" value="92">
+            <output id="optQualityOut" class="outline" for="optQuality">92%</output>
+          </div>
+        </div>
+
+        <p class="settings-note outline">Ao mudar um ajuste, as fotos já carregadas são refeitas sozinhas.</p>
+      </div>
+    </section>
+
+    <!-- AJUDA -->
+    <section class="panel" role="tabpanel" id="panel-ajuda" aria-labelledby="tab-ajuda" hidden>
+      <div class="help">
+        <ol class="steps">
+          <li class="step">
+            <span class="step-num">1</span>
+            <span class="step-title outline">Escolha as fotos</span>
+            <span class="step-desc">Toque em “Escolher fotos” ou arraste todas de uma vez. Pode ser direto do celular.</span>
+          </li>
+          <li class="step">
+            <span class="step-num">2</span>
+            <span class="step-title outline">Espere uns segundos</span>
+            <span class="step-desc">Cada foto é endireitada e tratada sozinha. Toque numa foto para ver o antes e depois.</span>
+          </li>
+          <li class="step">
+            <span class="step-num">3</span>
+            <span class="step-title outline">Baixe</span>
+            <span class="step-desc">“Baixar todas” gera um .zip com tudo. Ou baixe uma por uma.</span>
+          </li>
+        </ol>
+        <div class="tips">
+          <h2 class="section-label outline">Dicas</h2>
+          <ul>
+            <li class="outline">Se alguma ficou estranha, abra ela e use o <em>ajuste fino</em> ou desligue a correção de ângulo só pra ela.</li>
+            <li class="outline">Fotografe na altura do peito, com o celular deitado e reto (nem pra cima, nem pra baixo): a correção fica perfeita e corta menos.</li>
+            <li class="outline">Tudo acontece no seu navegador — nenhuma foto é enviada pra internet.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot outline">Achooo! · nenhuma foto sai do seu aparelho</footer>
+
+  <input type="file" id="file" accept="image/*" multiple hidden>
+  <div class="dropveil" id="veil" aria-hidden="true"><span class="outline">Solte as fotos aqui</span></div>
+
+  <!-- VISUALIZADOR -->
+  <dialog class="viewer" id="viewer" aria-labelledby="vName">
+    <div class="viewer-top">
+      <button class="btn btn-esc" id="vClose" type="button"><kbd>Esc</kbd>Voltar</button>
+      <span class="viewer-name outline" id="vName"></span>
+      <span class="viewer-index outline" id="vIndex"></span>
+    </div>
+    <div class="viewer-stage" id="vStage">
+      <img id="vImg" alt="">
+      <span class="viewer-tag" id="vTag">Depois</span>
+      <span class="viewer-busy" id="vBusy" hidden><i class="spinner"></i>Processando…</span>
+      <button class="btn nav nav-prev" id="vPrev" type="button" aria-label="Foto anterior">‹</button>
+      <button class="btn nav nav-next" id="vNext" type="button" aria-label="Próxima foto">›</button>
+    </div>
+    <p class="viewer-info outline" id="vInfo"></p>
+    <div class="viewer-controls">
+      <div class="seg" role="group" aria-label="Comparar">
+        <button type="button" id="vBefore" aria-pressed="false">Antes</button>
+        <button type="button" id="vAfter" aria-pressed="true">Depois</button>
+      </div>
+      <label class="fine">
+        <span class="outline">Ajuste fino</span>
+        <input type="range" id="vRoll" min="-5" max="5" step="0.1" value="0">
+        <output id="vRollOut" class="outline">0°</output>
+      </label>
+      <label class="mini-switch">
+        <input type="checkbox" class="switch" role="switch" id="vAuto" checked>
+        <span class="outline">Ângulo automático</span>
+      </label>
+      <button class="btn btn-accent" id="vDownload" type="button">Baixar esta foto</button>
+    </div>
+  </dialog>
+
+  <script src="js/core.js"></script>
+  <script src="js/pipeline.js"></script>
+  <script src="js/zip.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
