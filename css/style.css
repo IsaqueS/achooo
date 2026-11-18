@@ -83,6 +83,8 @@ button, input, select { font: inherit; }
   animation: bg-scroll 70s linear infinite;
   will-change: transform;
 }
+/* "Fundo animado" desligado nos Ajustes */
+.bg-still .bg-checker::before { animation: none; }
 /* anda exatamente 1 × 2 ladrilhos → o laço não tem emenda */
 @keyframes bg-scroll {
   from { transform: rotate(-24deg) translate(0, 0); }

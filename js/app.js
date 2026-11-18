@@ -219,7 +219,36 @@
     const turb = document.querySelector('#sketch feTurbulence');
     if (!turb) return;
     let k = 0;
-    setInterval(() => { if (!document.hidden) turb.setAttribute('seed', String(3 + (k++ % 3))); }, 180);
+    setInterval(() => {
+      if (bgAnimated && !document.hidden) turb.setAttribute('seed', String(3 + (k++ % 3)));
+    }, 180);
+  }
+
+  // Liga/desliga toda a animação do fundo (shader, rabiscos, xadrez).
+  // Desligada, o shader desenha um único quadro e nada mais roda por frame.
+  let bgAnimated = false;
+  let rafId = 0, animT = 0, lastNow = 0;
+  const swirlTime = () => 4 + animT * 0.5; // tinta gira devagar
+
+  function bgFrame(now) {
+    const dt = Math.min(0.1, (now - lastNow) / 1000);
+    lastNow = now;
+    animT += dt;
+    if (drawSwirl) drawSwirl(swirlTime());
+    moveDoodles(animT, dt);
+    rafId = requestAnimationFrame(bgFrame);
+  }
+
+  function setBackgroundAnimation(on) {
+    bgAnimated = on;
+    document.documentElement.classList.toggle('bg-still', !on);
+    if (on) {
+      if (!rafId) { lastNow = performance.now(); rafId = requestAnimationFrame(bgFrame); }
+    } else {
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+      if (drawSwirl) drawSwirl(swirlTime());
+    }
   }
 
   function startBackground() {
@@ -232,26 +261,12 @@
       new ResizeObserver(() => {
         stageW = stageEl.clientWidth; stageH = stageEl.clientHeight;
         swirlCenterY = Math.min(window.innerHeight * 0.72, 760) / 2; // = min-height do .stage no CSS
-        if (reduceMotion && drawSwirl) drawSwirl(4);
+        if (!bgAnimated && drawSwirl) drawSwirl(swirlTime());
       }).observe(stageEl);
     }
 
-    if (reduceMotion) {
-      if (drawSwirl) drawSwirl(4);
-      return;
-    }
     boilSketch();
-    let last = performance.now();
-    const t0 = last;
-    const frame = (now) => {
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      const t = (now - t0) / 1000;
-      if (drawSwirl) drawSwirl(4 + t * 0.5); // tinta gira devagar
-      moveDoodles(t, dt);
-      requestAnimationFrame(frame);
-    };
-    requestAnimationFrame(frame);
+    setBackgroundAnimation(S.bgAnim);
   }
 
   // ------------------------------------------------------------------
@@ -310,7 +325,7 @@
   // Configurações
   // ------------------------------------------------------------------
 
-  const S = { straighten: true, perspective: true, color: true, sharpen: true, maxSide: 4096, quality: 92 };
+  const S = { straighten: true, perspective: true, color: true, sharpen: true, maxSide: 4096, quality: 92, bgAnim: !reduceMotion };
   try { Object.assign(S, JSON.parse(localStorage.getItem('achooo-opts') || '{}')); } catch (e) { /* sem storage */ }
   const saveS = () => { try { localStorage.setItem('achooo-opts', JSON.stringify(S)); } catch (e) { /* ok */ } };
 
@@ -322,6 +337,10 @@
     optEls[k].checked = !!S[k];
     optEls[k].addEventListener('change', () => { S[k] = optEls[k].checked; saveS(); scheduleReprocessAll(); });
   }
+  const bgAnimEl = $('optBgAnim');
+  bgAnimEl.checked = !!S.bgAnim;
+  bgAnimEl.addEventListener('change', () => { S.bgAnim = bgAnimEl.checked; saveS(); setBackgroundAnimation(S.bgAnim); });
+
   $('optSize').value = String(S.maxSide);
   $('optSize').addEventListener('change', (e) => { S.maxSide = +e.target.value; saveS(); scheduleReprocessAll(); });
 
