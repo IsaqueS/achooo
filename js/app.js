@@ -39,8 +39,8 @@
     const smooth = (a, b, t) => { const x = Math.max(0, Math.min(1, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
     const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 
-    const PURPLE = [74, 78, 85], DEEP = [34, 30, 31], YELLOW = [220, 30, 32],
-      LILAC = [255, 255, 255], ORANGE = [68, 145, 189];
+    const PURPLE = [90, 165, 209], DEEP = [47, 123, 176], YELLOW = [255, 255, 255],
+      LILAC = [220, 30, 32], ORANGE = [232, 238, 243];
     const aspect = w / h;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
@@ -77,11 +77,11 @@
     uniform vec2 uRes;
     uniform vec2 uCenter;
     uniform float uTime;
-    const vec3 DEEP   = vec3(0.133, 0.118, 0.122); // #221e1f grafite
-    const vec3 PURPLE = vec3(0.290, 0.306, 0.333); // #4a4e55 cinza
-    const vec3 YELLOW = vec3(0.863, 0.118, 0.125); // #dc1e20 vermelho
-    const vec3 LILAC  = vec3(1.000, 1.000, 1.000); // branco
-    const vec3 ORANGE = vec3(0.267, 0.569, 0.741); // #4491bd azul céu
+    const vec3 DEEP   = vec3(0.184, 0.482, 0.690); // #2f7bb0 azul
+    const vec3 PURPLE = vec3(0.353, 0.647, 0.820); // #5aa5d1 azul céu
+    const vec3 YELLOW = vec3(1.000, 1.000, 1.000); // branco
+    const vec3 LILAC  = vec3(0.863, 0.118, 0.125); // #dc1e20 fio vermelho
+    const vec3 ORANGE = vec3(0.910, 0.933, 0.953); // #e8eef3 centro claro
     void main() {
       // posição relativa a um centro fixo a partir do topo, escala pela largura:
       // trocar de aba (o palco muda de altura) não mexe no desenho
@@ -106,7 +106,7 @@
       float v = 0.5 + 0.5 * sin(length(p) * 2.2 + p.x * 1.2 - t * 0.6);
       vec3 col = mix(DEEP, PURPLE, smoothstep(0.08, 0.45, v));
       col = mix(col, YELLOW, smoothstep(0.64, 0.80, v));
-      col = mix(col, LILAC, smoothstep(0.92, 1.0, v) * 0.85);
+      col = mix(col, LILAC, smoothstep(0.955, 1.0, v) * 0.8);
       float core = exp(-r * r * 6.0) * smoothstep(0.55, 0.15, v);
       col = mix(col, ORANGE, clamp(core * 1.1, 0.0, 1.0));
       gl_FragColor = vec4(col, 1.0);
