@@ -4,8 +4,8 @@ Coloque todas as fotos de um imóvel e elas saem **endireitadas e tratadas** aut
 
 - **Endireitar** — detecta as linhas verticais (portas, paredes, janelas) e gira a foto até ficarem retas.
 - **Corrigir perspectiva** — tira o efeito de "parede caindo" quando o celular estava inclinado para cima ou para baixo.
-- **Cor e luz** — tira o amarelado, ajusta o branco, clareia ambientes escuros e realça as cores.
-- **Nitidez** — realce leve de detalhes.
+- **Cor e luz** — estilo de foto de imobiliária: paredes claras e limpas, brancos sem estourar, cores fortes mais vivas e mais contraste local.
+- **Nitidez** — realce de detalhes que ignora o ruído fino.
 
 Tudo roda no navegador: nenhuma foto é enviada para servidor nenhum.
 Dá para baixar uma por uma ou todas num `.zip`.
@@ -44,6 +44,6 @@ js/app.js           interface
 2. Com os segmentos quase verticais, um RANSAC encontra o **ponto de fuga vertical**.
 3. Desse ponto saem a inclinação lateral (*roll*) e a inclinação para cima/baixo (*pitch*). A foto é "re-fotografada" por uma câmera virtual girada (`H = K·R·K⁻¹`), e o maior retângulo com a mesma proporção é recortado.
 4. Travas de segurança: se a câmera estava apontada muito para o chão/teto ou a detecção é fraca, o ângulo é mantido; se o recorte ficaria grande demais, a correção é suavizada.
-5. Cor: balanço de branco pelos tons neutros claros (esfriar o amarelado é aplicado com força, esquentar só de leve), níveis, brilho dos meios-tons, contraste suave e vibração.
+5. Cor: balanço de branco pelos tons neutros claros (esfriar o amarelado é aplicado com força, esquentar só de leve) e um branco levemente quente. A curva tonal foi ajustada em pares antes/depois de referência: a luminância do percentil 80 (a "parede") vai para ~217/255, com ombro suave (Reinhard estendido) e um "S" de contraste, aplicada na luminância para não mudar o matiz. Depois vêm contraste local (raio ~1% do lado maior, contido em bordas fortes), saturação só nas cores fortes (amarelo com menos força) e tons claros pouco saturados puxados para o branco.
 
 Fonte: [Chakra Petch](https://fonts.google.com/specimen/Chakra+Petch) (SIL Open Font License).
