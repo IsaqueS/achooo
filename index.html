@@ -3,40 +3,163 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Achooo! — Fotos de imóvel prontas para anunciar</title>
-  <meta name="description" content="Coloque as fotos do imóvel e elas saem endireitadas, com perspectiva, cor, luz corrigidas e sem marca d’água. Tudo no seu navegador.">
-  <meta name="theme-color" content="#8c0808">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%238c0808'/%3E%3Cpath d='M16 33L32 19l16 14M21 29v17h22V29' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='32' cy='37' r='4.5' fill='%23fff'/%3E%3C/svg%3E">
+  <meta name="author" content="Isaque Sebold">
+  <title>Achooo! — Evolução Imóveis · Fotos prontas para anunciar</title>
+  <meta name="description" content="Coloque as fotos do imóvel e elas saem endireitadas, com perspectiva, cor, luz corrigidas e sem marca d’água. Por Isaque Sebold.">
+  <meta name="theme-color" content="#221e1f">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23221e1f'/%3E%3Ccircle cx='16' cy='46' r='3.5' fill='%23fff'/%3E%3Ccircle cx='16' cy='36' r='3.5' fill='%23fff'/%3E%3Ccircle cx='27' cy='46' r='3.5' fill='%23dc1e20'/%3E%3Ccircle cx='27' cy='36' r='3.5' fill='%23dc1e20'/%3E%3Ccircle cx='27' cy='26' r='3.5' fill='%23dc1e20'/%3E%3Ccircle cx='38' cy='46' r='3.5' fill='%23fff'/%3E%3Ccircle cx='38' cy='36' r='3.5' fill='%23fff'/%3E%3Ccircle cx='38' cy='26' r='3.5' fill='%23fff'/%3E%3Ccircle cx='38' cy='16' r='3.5' fill='%23fff'/%3E%3Ccircle cx='49' cy='46' r='3.5' fill='%23dc1e20'/%3E%3Ccircle cx='49' cy='36' r='3.5' fill='%23dc1e20'/%3E%3Ccircle cx='49' cy='26' r='3.5' fill='%23dc1e20'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- Fundo arquitetônico flat: prédios suaves de baixo contraste + detalhe geométrico diagonal -->
+  <div class="bg-scene" aria-hidden="true">
+    <svg class="bg-skyline" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <!-- Plano de fundo (torres distantes, contraste bem suave) -->
+      <g fill="#dde6f0">
+        <rect x="24" y="210" width="92" height="250" rx="2"/>
+        <rect x="38" y="198" width="64" height="14"/>
+        <rect x="196" y="168" width="110" height="292" rx="2"/>
+        <rect x="218" y="152" width="66" height="18"/>
+        <rect x="392" y="246" width="96" height="214" rx="2"/>
+        <rect x="572" y="268" width="118" height="192" rx="2"/>
+        <rect x="760" y="256" width="108" height="204" rx="2"/>
+        <rect x="944" y="220" width="102" height="240" rx="2"/>
+        <rect x="1116" y="156" width="116" height="304" rx="2"/>
+        <rect x="1136" y="140" width="76" height="18"/>
+        <rect x="1310" y="196" width="104" height="264" rx="2"/>
+      </g>
+
+      <!-- Plano intermediário (prédios modernos 2-tons com varandas horizontais, estilo TemplatePost) -->
+      <g>
+        <!-- Torre esquerda principal -->
+        <rect x="74" y="112" width="124" height="348" fill="#cedbe8"/>
+        <rect x="198" y="128" width="46" height="332" fill="#c1d0e0"/>
+        <rect x="86" y="96" width="22" height="18" fill="#d7e2ee"/>
+        <rect x="166" y="96" width="22" height="18" fill="#d7e2ee"/>
+        <!-- Varandas horizontais sutis -->
+        <g fill="#e6eef6">
+          <rect x="88" y="142" width="96" height="8" rx="1"/>
+          <rect x="88" y="168" width="96" height="8" rx="1"/>
+          <rect x="88" y="194" width="96" height="8" rx="1"/>
+          <rect x="88" y="220" width="96" height="8" rx="1"/>
+          <rect x="88" y="246" width="96" height="8" rx="1"/>
+          <rect x="88" y="272" width="96" height="8" rx="1"/>
+          <rect x="88" y="298" width="96" height="8" rx="1"/>
+          <rect x="88" y="324" width="96" height="8" rx="1"/>
+          <rect x="88" y="350" width="96" height="8" rx="1"/>
+        </g>
+        <!-- Janelas laterais -->
+        <g fill="#dae4ef">
+          <rect x="208" y="148" width="24" height="10" rx="1"/>
+          <rect x="208" y="174" width="24" height="10" rx="1"/>
+          <rect x="208" y="200" width="24" height="10" rx="1"/>
+          <rect x="208" y="226" width="24" height="10" rx="1"/>
+          <rect x="208" y="252" width="24" height="10" rx="1"/>
+          <rect x="208" y="278" width="24" height="10" rx="1"/>
+          <rect x="208" y="304" width="24" height="10" rx="1"/>
+        </g>
+
+        <!-- Prédio esquerdo secundário -->
+        <rect x="278" y="224" width="98" height="236" fill="#d2dee9"/>
+        <rect x="376" y="238" width="32" height="222" fill="#c6d4e2"/>
+        <g fill="#e7eff7">
+          <rect x="292" y="248" width="20" height="12" rx="1"/>
+          <rect x="320" y="248" width="20" height="12" rx="1"/>
+          <rect x="348" y="248" width="16" height="12" rx="1"/>
+          <rect x="292" y="276" width="20" height="12" rx="1"/>
+          <rect x="320" y="276" width="20" height="12" rx="1"/>
+          <rect x="348" y="276" width="16" height="12" rx="1"/>
+          <rect x="292" y="304" width="20" height="12" rx="1"/>
+          <rect x="320" y="304" width="20" height="12" rx="1"/>
+          <rect x="348" y="304" width="16" height="12" rx="1"/>
+          <rect x="292" y="332" width="20" height="12" rx="1"/>
+          <rect x="320" y="332" width="20" height="12" rx="1"/>
+        </g>
+
+        <!-- Blocos baixos centrais (mantém o meio calmo atrás do card) -->
+        <rect x="460" y="308" width="110" height="152" fill="#d5e0ec"/>
+        <rect x="640" y="324" width="132" height="136" fill="#d2dee9"/>
+        <rect x="836" y="298" width="106" height="162" fill="#d5e0ec"/>
+        <g fill="#e7eff7">
+          <rect x="478" y="328" width="74" height="7" rx="1"/>
+          <rect x="478" y="350" width="74" height="7" rx="1"/>
+          <rect x="658" y="344" width="96" height="7" rx="1"/>
+          <rect x="658" y="366" width="96" height="7" rx="1"/>
+          <rect x="854" y="318" width="70" height="7" rx="1"/>
+          <rect x="854" y="340" width="70" height="7" rx="1"/>
+        </g>
+
+        <!-- Prédio direito secundário -->
+        <rect x="1008" y="212" width="94" height="248" fill="#c7d5e3"/>
+        <rect x="1102" y="200" width="44" height="260" fill="#d2dee9"/>
+        <g fill="#e6eef6">
+          <rect x="1022" y="236" width="66" height="8" rx="1"/>
+          <rect x="1022" y="262" width="66" height="8" rx="1"/>
+          <rect x="1022" y="288" width="66" height="8" rx="1"/>
+          <rect x="1022" y="314" width="66" height="8" rx="1"/>
+          <rect x="1022" y="340" width="66" height="8" rx="1"/>
+        </g>
+
+        <!-- Torre direita principal (varandas marcadas, estilo prédio da referência) -->
+        <rect x="1178" y="132" width="46" height="328" fill="#c1d0e0"/>
+        <rect x="1224" y="102" width="136" height="358" fill="#cedbe8"/>
+        <rect x="1236" y="84" width="22" height="20" fill="#d7e2ee"/>
+        <rect x="1324" y="84" width="22" height="20" fill="#d7e2ee"/>
+        <g fill="#e6eef6">
+          <rect x="1240" y="132" width="104" height="8" rx="1"/>
+          <rect x="1240" y="158" width="104" height="8" rx="1"/>
+          <rect x="1240" y="184" width="104" height="8" rx="1"/>
+          <rect x="1240" y="210" width="104" height="8" rx="1"/>
+          <rect x="1240" y="236" width="104" height="8" rx="1"/>
+          <rect x="1240" y="262" width="104" height="8" rx="1"/>
+          <rect x="1240" y="288" width="104" height="8" rx="1"/>
+          <rect x="1240" y="314" width="104" height="8" rx="1"/>
+          <rect x="1240" y="340" width="104" height="8" rx="1"/>
+        </g>
+        <g fill="#dae4ef">
+          <rect x="1190" y="152" width="24" height="10" rx="1"/>
+          <rect x="1190" y="178" width="24" height="10" rx="1"/>
+          <rect x="1190" y="204" width="24" height="10" rx="1"/>
+          <rect x="1190" y="230" width="24" height="10" rx="1"/>
+          <rect x="1190" y="256" width="24" height="10" rx="1"/>
+          <rect x="1190" y="282" width="24" height="10" rx="1"/>
+          <rect x="1190" y="308" width="24" height="10" rx="1"/>
+        </g>
+      </g>
+
+      <!-- Detalhe geométrico diagonal bem sutil (inspirado na faixa do TemplatePostImagemV3) -->
+      <polygon points="0,336 286,460 0,460" fill="#dc1e20" opacity="0.09"/>
+      <polygon points="0,378 192,460 0,460" fill="#221e1f" opacity="0.06"/>
+      <polygon points="1440,352 1170,460 1440,460" fill="#dc1e20" opacity="0.07"/>
+    </svg>
+  </div>
+
+  <!-- Cabeçalho escuro com a logo oficial da Evolução Imóveis + detalhe diagonal vermelho -->
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 11.5 12 4l9 7.5"/>
-            <path d="M6 9.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V9.5"/>
-            <circle cx="12" cy="14" r="2.5"/>
-          </svg>
-        </span>
+        <img src="img/logo-evolucao.svg" alt="Evolução Imóveis" class="brand-logo" width="80" height="56">
+        <span class="brand-sep" aria-hidden="true"></span>
         <div class="brand-text">
           <span class="brand-name">Achooo!</span>
-          <span class="brand-tag">Estúdio de fotos imobiliárias</span>
+          <span class="brand-tag">Estúdio de fotos</span>
         </div>
       </div>
 
       <nav class="tabs" role="tablist" aria-label="Seções">
         <button class="tab" role="tab" id="tab-fotos" aria-selected="true" aria-controls="panel-fotos">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg>
           <span>Fotos</span><span class="tab-count" id="tabCount"></span>
         </button>
         <button class="tab" role="tab" id="tab-ajustes" aria-selected="false" aria-controls="panel-ajustes" tabindex="-1">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="2" y1="14" x2="6" y2="14"/><line x1="10" y1="8" x2="14" y2="8"/><line x1="18" y1="16" x2="22" y2="16"/></svg>
           <span>Ajustes</span>
         </button>
         <button class="tab" role="tab" id="tab-ajuda" aria-selected="false" aria-controls="panel-ajuda" tabindex="-1">
+          <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           <span>Como usar</span>
         </button>
       </nav>
@@ -48,14 +171,14 @@
     <section class="panel" role="tabpanel" id="panel-fotos" aria-labelledby="tab-fotos">
       <div class="drop" id="drop">
         <div class="hero-copy">
-          <h1 class="hero-title">Fotos de imóvel prontas para anunciar</h1>
+          <h1 class="hero-title">Fotos de imóvel <span>prontas para anunciar</span></h1>
           <p class="hero-sub">Envie todas as fotos de uma vez: endireitamos paredes, corrigimos perspectiva, iluminamos ambientes e limpamos marcas d’água automaticamente.</p>
         </div>
 
         <div class="drop-box">
           <div class="drop-zone">
             <span class="drop-icon-wrap" aria-hidden="true">
-              <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
@@ -63,7 +186,10 @@
             </span>
             <h2>Arraste as fotos do imóvel para cá</h2>
             <p class="drop-or">ou selecione direto do computador ou celular</p>
-            <button class="btn btn-big btn-accent" id="pick" type="button">Escolher fotos</button>
+            <button class="btn btn-big btn-accent" id="pick" type="button">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/><line x1="16" y1="5" x2="22" y2="5"/><line x1="19" y1="2" x2="19" y2="8"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></svg>
+              <span>Escolher fotos</span>
+            </button>
             <p class="hint">Aceita JPG, PNG ou WebP · Pode selecionar o lote inteiro de uma vez</p>
           </div>
 
@@ -95,9 +221,18 @@
             <span id="statusText" role="status" aria-live="polite"></span>
           </div>
           <div class="actions">
-            <button class="btn" id="add" type="button">+ Adicionar</button>
-            <button class="btn btn-ghost" id="clear" type="button">Limpar</button>
-            <button class="btn btn-accent" id="zip" type="button" disabled>Baixar todas (.zip)</button>
+            <button class="btn" id="add" type="button">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              <span>Adicionar</span>
+            </button>
+            <button class="btn btn-ghost" id="clear" type="button">
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <span>Limpar</span>
+            </button>
+            <button class="btn btn-accent" id="zip" type="button" disabled>
+              <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span class="btn-label">Baixar todas (.zip)</span>
+            </button>
           </div>
         </div>
         <ul class="grid" id="grid"></ul>
@@ -229,8 +364,15 @@
 
   <footer class="foot">
     <div class="foot-inner">
-      <span><strong>Achooo!</strong> · Tratamento automático de fotos imobiliárias</span>
-      <span class="foot-privacy">100% no navegador · nenhuma foto sai do seu aparelho</span>
+      <div class="foot-brand">
+        <img src="img/logo-evolucao.svg" alt="Evolução Imóveis" class="foot-logo" width="46" height="32">
+        <span><strong>Achooo!</strong> · Evolução Imóveis</span>
+      </div>
+      <div class="foot-meta">
+        <span class="foot-author">Desenvolvido por <strong>Isaque Sebold</strong></span>
+        <span class="foot-sep" aria-hidden="true">·</span>
+        <span class="foot-privacy">100% no navegador · nenhuma foto sai do seu aparelho</span>
+      </div>
     </div>
   </footer>
 
@@ -249,7 +391,11 @@
   <!-- VISUALIZADOR -->
   <dialog class="viewer" id="viewer" aria-labelledby="vName">
     <div class="viewer-top">
-      <button class="btn btn-esc" id="vClose" type="button"><kbd>Esc</kbd>Voltar</button>
+      <button class="btn btn-esc" id="vClose" type="button">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <span>Voltar</span>
+        <kbd>Esc</kbd>
+      </button>
       <span class="viewer-name" id="vName"></span>
       <span class="viewer-index" id="vIndex"></span>
     </div>
@@ -263,8 +409,14 @@
     <p class="viewer-info" id="vInfo"></p>
     <div class="viewer-controls">
       <div class="seg" role="group" aria-label="Comparar">
-        <button type="button" id="vBefore" aria-pressed="false">Antes</button>
-        <button type="button" id="vAfter" aria-pressed="true">Depois</button>
+        <button type="button" id="vBefore" aria-pressed="false">
+          <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>Antes</span>
+        </button>
+        <button type="button" id="vAfter" aria-pressed="true">
+          <svg class="ic ic-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6 7 18.2l1.9-5.8L4 8.8h6.1z"/></svg>
+          <span>Depois</span>
+        </button>
       </div>
       <label class="fine">
         <span>Ajuste fino</span>
@@ -279,7 +431,10 @@
         <input type="checkbox" class="switch" role="switch" id="vWm" checked>
         <span>Remover marca d’água</span>
       </label>
-      <button class="btn btn-accent" id="vDownload" type="button">Baixar esta foto</button>
+      <button class="btn btn-accent" id="vDownload" type="button">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Baixar esta foto</span>
+      </button>
     </div>
   </dialog>
 

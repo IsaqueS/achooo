@@ -451,6 +451,12 @@
     }
   }
 
+  function setZipText(txt) {
+    const btn = $('zip');
+    const lbl = btn.querySelector('.btn-label');
+    if (lbl) lbl.textContent = txt; else btn.textContent = txt;
+  }
+
   function updateStatus() {
     const total = items.length;
     const done = items.filter((i) => i.status === 'done').length;
@@ -463,7 +469,7 @@
       const zip = $('zip');
       if (!zipping) {
         zip.disabled = true;
-        zip.textContent = 'Aguarde…';
+        setZipText('Aguarde…');
       }
       return;
     }
@@ -476,7 +482,7 @@
     const zip = $('zip');
     if (!zipping) {
       zip.disabled = !done || pending > 0;
-      zip.textContent = pending > 0 && done ? 'Aguarde…' : 'Baixar todas (.zip)';
+      setZipText(pending > 0 && done ? 'Aguarde…' : 'Baixar todas (.zip)');
     }
   }
 
@@ -511,7 +517,7 @@
     zipping = true;
     const btn = $('zip');
     btn.disabled = true;
-    btn.textContent = 'Gerando .zip…';
+    setZipText('Gerando .zip…');
     try {
       const used = new Map();
       const files = ready.map((it, idx) => {
