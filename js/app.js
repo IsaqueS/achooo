@@ -6,284 +6,15 @@
   const fmt = (n) => Math.abs(n).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
   // ------------------------------------------------------------------
-  // Fundo: redemoinho líquido + rabiscos
-  // ------------------------------------------------------------------
-
-  function paintSwirl() {
-    const w = 400, h = 250;
-    const c = document.createElement('canvas');
-    c.width = w; c.height = h;
-    const ctx = c.getContext('2d');
-    const img = ctx.createImageData(w, h);
-    const d = img.data;
-
-    let seed = 7;
-    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    const P = new Uint8Array(512);
-    for (let i = 0; i < 256; i++) P[i] = i;
-    for (let i = 255; i > 0; i--) { const j = (rand() * (i + 1)) | 0; [P[i], P[j]] = [P[j], P[i]]; }
-    for (let i = 0; i < 256; i++) P[i + 256] = P[i];
-    const hash = (x, y) => P[P[x & 255] + (y & 255)] / 255;
-    const sstep = (t) => t * t * (3 - 2 * t);
-    function noise(x, y) {
-      const xi = Math.floor(x), yi = Math.floor(y);
-      const fx = sstep(x - xi), fy = sstep(y - yi);
-      const a = hash(xi, yi), b = hash(xi + 1, yi), cc = hash(xi, yi + 1), dd = hash(xi + 1, yi + 1);
-      return a + (b - a) * fx + (cc - a) * fy + (a - b - cc + dd) * fx * fy;
-    }
-    function fbm(x, y) {
-      let v = 0, amp = 0.5;
-      for (let o = 0; o < 4; o++) { v += amp * noise(x, y); x = x * 2.03 + 11.3; y = y * 2.01 + 7.1; amp *= 0.5; }
-      return v / 0.9375;
-    }
-    const smooth = (a, b, t) => { const x = Math.max(0, Math.min(1, (t - a) / (b - a))); return x * x * (3 - 2 * x); };
-    const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-
-    const PURPLE = [90, 165, 209], DEEP = [47, 123, 176], YELLOW = [255, 255, 255],
-      LILAC = [220, 30, 32], ORANGE = [232, 238, 243];
-    const aspect = w / h;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        let nx = (x / w - 0.5) * aspect, ny = y / h - 0.5;
-        const r = Math.hypot(nx, ny);
-        const a = Math.atan2(ny, nx) + 3.2 * Math.exp(-r * 2.6);
-        nx = r * Math.cos(a); ny = r * Math.sin(a);
-        const qx = fbm(nx * 2.6 + 1.7, ny * 2.6 + 9.2);
-        const qy = fbm(nx * 2.6 + 8.3, ny * 2.6 + 2.8);
-        const t = fbm(nx * 2.4 + 3.5 * qx, ny * 2.4 + 3.5 * qy);
-        const band = 0.5 + 0.5 * Math.sin(t * 15 + r * 5);
-        let col = mix(DEEP, PURPLE, smooth(0.1, 0.45, band));
-        col = mix(col, YELLOW, smooth(0.6, 0.86, band));
-        col = mix(col, LILAC, smooth(0.93, 1.0, band) * 0.85);
-        const core = Math.exp(-r * r * 9) * smooth(0.45, 0.7, qx) * (1 - smooth(0.55, 0.8, band));
-        col = mix(col, ORANGE, Math.min(1, core * 1.4));
-        const i = (y * w + x) * 4;
-        d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2]; d[i + 3] = 255;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-    $('swirl').style.backgroundImage = `url(${c.toDataURL('image/jpeg', 0.9)})`;
-  }
-
-  // Redemoinho animado em WebGL (shader próprio: torção polar + distorção
-  // iterativa, tipo tinta mexida). Sem WebGL, cai no redemoinho estático.
-  const SWIRL_VS = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-  const SWIRL_FS = `
-    #ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-    #else
-    precision mediump float;
-    #endif
-    uniform vec2 uRes;
-    uniform vec2 uCenter;
-    uniform float uTime;
-    const vec3 DEEP   = vec3(0.184, 0.482, 0.690); // #2f7bb0 azul
-    const vec3 PURPLE = vec3(0.353, 0.647, 0.820); // #5aa5d1 azul céu
-    const vec3 YELLOW = vec3(1.000, 1.000, 1.000); // branco
-    const vec3 LILAC  = vec3(0.863, 0.118, 0.125); // #dc1e20 fio vermelho
-    const vec3 ORANGE = vec3(0.910, 0.933, 0.953); // #e8eef3 centro claro
-    void main() {
-      // posição relativa a um centro fixo a partir do topo, escala pela largura:
-      // trocar de aba (o palco muda de altura) não mexe no desenho
-      vec2 fc = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y);
-      vec2 uv = (fc - uCenter) / uRes.x * 2.0;
-      uv.y = -uv.y;
-      float t = uTime;
-      float r = length(uv);
-      float a = atan(uv.y, uv.x);
-      // torção: mais forte no centro, girando devagar
-      a += t * 0.12 + 3.2 * exp(-r * 1.2);
-      vec2 p = vec2(cos(a), sin(a)) * r * 5.0;
-      // distorção iterativa (efeito de tinta)
-      for (int i = 0; i < 8; i++) {
-        float fi = float(i);
-        p += 0.8 * vec2(
-          sin(p.y * 0.9 + t * 0.35 + fi * 1.3),
-          cos(p.x * 0.85 - t * 0.28 + fi * 2.1)
-        );
-        p = vec2(0.8 * p.x + 0.6 * p.y, -0.6 * p.x + 0.8 * p.y);
-      }
-      float v = 0.5 + 0.5 * sin(length(p) * 2.2 + p.x * 1.2 - t * 0.6);
-      vec3 col = mix(DEEP, PURPLE, smoothstep(0.08, 0.45, v));
-      col = mix(col, YELLOW, smoothstep(0.64, 0.80, v));
-      col = mix(col, LILAC, smoothstep(0.955, 1.0, v) * 0.8);
-      float core = exp(-r * r * 6.0) * smoothstep(0.55, 0.15, v);
-      col = mix(col, ORANGE, clamp(core * 1.1, 0.0, 1.0));
-      gl_FragColor = vec4(col, 1.0);
-    }`;
-
-  const reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const swirlEl = $('swirl');
-  const stageEl = document.querySelector('.stage');
-  let stageW = stageEl.clientWidth, stageH = stageEl.clientHeight;
-  // centro do redemoinho: meio da altura mínima do palco (não da altura atual)
-  let swirlCenterY = Math.min(window.innerHeight * 0.72, 760) / 2; // = min-height do .stage no CSS
-  let drawSwirl = null; // (tempo) => void
-
-  function startShader() {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
-    if (!gl) return false;
-    const sh = (type, src) => {
-      const o = gl.createShader(type);
-      gl.shaderSource(o, src);
-      gl.compileShader(o);
-      if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o));
-      return o;
-    };
-    let prog;
-    try {
-      prog = gl.createProgram();
-      gl.attachShader(prog, sh(gl.VERTEX_SHADER, SWIRL_VS));
-      gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, SWIRL_FS));
-      gl.linkProgram(prog);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
-    } catch (e) {
-      return false;
-    }
-    gl.useProgram(prog);
-    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'p');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    const uRes = gl.getUniformLocation(prog, 'uRes');
-    const uTime = gl.getUniformLocation(prog, 'uTime');
-    const uCenter = gl.getUniformLocation(prog, 'uCenter');
-    swirlEl.appendChild(canvas);
-
-    // resolução reduzida: o resultado é suave mesmo ampliado, e leve para a GPU
-    const SCALE = 0.5;
-    drawSwirl = (t) => {
-      const w = Math.max(1, Math.round(stageW * SCALE)), h = Math.max(1, Math.round(stageH * SCALE));
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w; canvas.height = h;
-        gl.viewport(0, 0, w, h);
-      }
-      gl.uniform2f(uRes, w, h);
-      gl.uniform2f(uCenter, w / 2, Math.min(swirlCenterY, stageH / 2) * (w / stageW));
-      gl.uniform1f(uTime, t);
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-    };
-    return true;
-  }
-
-  // Rabiscos que flutuam pelo palco e dão a volta pelas bordas.
-  const DOODLES = ['house', 'camera', 'frame', 'level', 'key', 'sofa', 'frame', 'house', 'camera', 'level'];
-  const doodles = [];
-  function placeDoodles() {
-    const box = $('doodles');
-    const NS = 'http://www.w3.org/2000/svg';
-    let seed = 42;
-    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-    DOODLES.forEach((id, i) => {
-      const size = 64 + rand() * 50;
-      const svg = document.createElementNS(NS, 'svg');
-      svg.setAttribute('viewBox', '0 0 80 80');
-      svg.style.width = svg.style.height = size + 'px';
-      const use = document.createElementNS(NS, 'use');
-      use.setAttribute('href', '#d-' + id);
-      svg.appendChild(use);
-      box.appendChild(svg);
-      const ang = rand() * Math.PI * 2;
-      const speed = 10 + rand() * 16; // px/s
-      doodles.push({
-        el: svg, size,
-        x: ((i % 5) / 5 + rand() * 0.15) * stageW,
-        y: ((i < 5 ? 0.12 : 0.62) + rand() * 0.25) * stageH,
-        vx: Math.cos(ang) * speed, vy: Math.sin(ang) * speed,
-        rot: (rand() - 0.5) * 30, spin: (rand() - 0.5) * 14,
-        bob: rand() * Math.PI * 2,
-      });
-    });
-    moveDoodles(0, 0);
-  }
-
-  function moveDoodles(t, dt) {
-    for (const d of doodles) {
-      d.x += d.vx * dt;
-      d.y += d.vy * dt;
-      d.rot += d.spin * dt;
-      const m = d.size;
-      if (d.x > stageW + m) d.x = -m; else if (d.x < -m) d.x = stageW + m;
-      if (d.y > stageH + m) d.y = -m; else if (d.y < -m) d.y = stageH + m;
-      const bob = Math.sin(t * 1.3 + d.bob) * 6;
-      const tilt = Math.sin(t * 0.9 + d.bob) * 6;
-      d.el.style.transform =
-        `translate(${(d.x - m / 2).toFixed(1)}px, ${(d.y - m / 2 + bob).toFixed(1)}px) rotate(${(d.rot + tilt).toFixed(1)}deg)`;
-    }
-  }
-
-  // traço "fervendo", como desenho à mão
-  function boilSketch() {
-    const turb = document.querySelector('#sketch feTurbulence');
-    if (!turb) return;
-    let k = 0;
-    setInterval(() => {
-      if (bgAnimated && !document.hidden) turb.setAttribute('seed', String(3 + (k++ % 3)));
-    }, 180);
-  }
-
-  // Liga/desliga toda a animação do fundo (shader, rabiscos, xadrez).
-  // Desligada, o shader desenha um único quadro e nada mais roda por frame.
-  let bgAnimated = false;
-  let rafId = 0, animT = 0, lastNow = 0;
-  const swirlTime = () => 4 + animT * 0.5; // tinta gira devagar
-
-  function bgFrame(now) {
-    const dt = Math.min(0.1, (now - lastNow) / 1000);
-    lastNow = now;
-    animT += dt;
-    if (drawSwirl) drawSwirl(swirlTime());
-    moveDoodles(animT, dt);
-    rafId = requestAnimationFrame(bgFrame);
-  }
-
-  function setBackgroundAnimation(on) {
-    bgAnimated = on;
-    document.documentElement.classList.toggle('bg-still', !on);
-    if (on) {
-      if (!rafId) { lastNow = performance.now(); rafId = requestAnimationFrame(bgFrame); }
-    } else {
-      cancelAnimationFrame(rafId);
-      rafId = 0;
-      if (drawSwirl) drawSwirl(swirlTime());
-    }
-  }
-
-  function startBackground() {
-    let shader = false;
-    try { shader = startShader(); } catch (e) { shader = false; }
-    if (!shader) paintSwirl();
-    placeDoodles();
-
-    if ('ResizeObserver' in window) {
-      new ResizeObserver(() => {
-        stageW = stageEl.clientWidth; stageH = stageEl.clientHeight;
-        swirlCenterY = Math.min(window.innerHeight * 0.72, 760) / 2; // = min-height do .stage no CSS
-        if (!bgAnimated && drawSwirl) drawSwirl(swirlTime());
-      }).observe(stageEl);
-    }
-
-    boilSketch();
-    setBackgroundAnimation(S.bgAnim);
-  }
-
-  // ------------------------------------------------------------------
   // Abas
   // ------------------------------------------------------------------
 
   const tabs = [...document.querySelectorAll('.tab')];
-  const STAGGER = '.drop-box, .toolbar, .grid > li, .settings > *, .steps > li, .tips';
   let tabTimer = null;
 
   function enterPanel(panel) {
     panel.hidden = false;
     panel.classList.remove('leaving', 'entering');
-    panel.querySelectorAll(STAGGER).forEach((el, i) => {
-      el.classList.add('stagger');
-      el.style.setProperty('--i', Math.min(i, 12));
-    });
     void panel.offsetWidth; // reinicia a animação
     panel.classList.add('entering');
   }
@@ -325,7 +56,7 @@
   // Configurações
   // ------------------------------------------------------------------
 
-  const S = { straighten: true, perspective: true, color: true, sharpen: true, watermark: true, maxSide: 4096, quality: 92, bgAnim: !reduceMotion };
+  const S = { straighten: true, perspective: true, color: true, sharpen: true, watermark: true, maxSide: 4096, quality: 92 };
   try { Object.assign(S, JSON.parse(localStorage.getItem('achooo-opts') || '{}')); } catch (e) { /* sem storage */ }
   const saveS = () => { try { localStorage.setItem('achooo-opts', JSON.stringify(S)); } catch (e) { /* ok */ } };
 
@@ -337,9 +68,6 @@
     optEls[k].checked = !!S[k];
     optEls[k].addEventListener('change', () => { S[k] = optEls[k].checked; saveS(); scheduleReprocessAll(); });
   }
-  const bgAnimEl = $('optBgAnim');
-  bgAnimEl.checked = !!S.bgAnim;
-  bgAnimEl.addEventListener('change', () => { S.bgAnim = bgAnimEl.checked; saveS(); setBackgroundAnimation(S.bgAnim); });
 
   $('optSize').value = String(S.maxSide);
   $('optSize').addEventListener('change', (e) => { S.maxSide = +e.target.value; saveS(); scheduleReprocessAll(); });
@@ -692,7 +420,7 @@
     const out = [];
     const i = item.info;
     if (!i) return out;
-    if (i.watermark) out.push(['Sem marca d’água', '']);
+    if (i.watermark) out.push(['Sem marca d’água', 'ok']);
     if (i.roll) out.push(['Girada ' + fmt(i.roll) + '°', '']);
     if (i.pitch) out.push(['Perspectiva', '']);
     if (!i.roll && !i.pitch) out.push([item.auto && (S.straighten || S.perspective) ? 'Já estava reta' : 'Ângulo mantido', 'soft']);
@@ -972,7 +700,6 @@
   });
 
   // ------------------------------------------------------------------
-  startBackground();
   enterPanel($('panel-fotos'));
   initPool();
   updateStatus();
