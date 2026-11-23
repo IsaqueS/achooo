@@ -116,6 +116,14 @@
           <input type="checkbox" class="switch" role="switch" id="optSharpen" checked>
         </label>
 
+        <label class="row">
+          <span class="row-text">
+            <span class="row-title outline">Remover marca d’água</span>
+            <span class="row-desc outline">Detecta e limpa logos repetidos automaticamente quando você envia 3 ou mais fotos juntas.</span>
+          </span>
+          <input type="checkbox" class="switch" role="switch" id="optWatermark" checked>
+        </label>
+
         <h2 class="section-label outline">Arquivo final</h2>
 
         <div class="row">
@@ -183,6 +191,7 @@
           <ul>
             <li class="outline">Se alguma ficou estranha, abra ela e use o <em>ajuste fino</em> ou desligue a correção de ângulo só pra ela.</li>
             <li class="outline">Fotografe na altura do peito, com o celular deitado e reto (nem pra cima, nem pra baixo): a correção fica perfeita e corta menos.</li>
+            <li class="outline">Para remover marcas d’água, envie pelo menos 3 fotos com a mesma marca juntas — quanto mais fotos no lote, mais limpa fica a remoção.</li>
             <li class="outline">Tudo acontece no seu navegador — nenhuma foto é enviada pra internet.</li>
           </ul>
         </div>
@@ -224,10 +233,15 @@
         <input type="checkbox" class="switch" role="switch" id="vAuto" checked>
         <span class="outline">Ângulo automático</span>
       </label>
+      <label class="mini-switch" id="vWmWrap" hidden>
+        <input type="checkbox" class="switch" role="switch" id="vWm" checked>
+        <span class="outline">Remover marca d’água</span>
+      </label>
       <button class="btn btn-accent" id="vDownload" type="button">Baixar esta foto</button>
     </div>
   </dialog>
 
+  <script src="js/watermark.js"></script>
   <script src="js/core.js"></script>
   <script src="js/pipeline.js"></script>
   <script src="js/zip.js"></script>

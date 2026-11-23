@@ -23,16 +23,28 @@
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(bmp, 0, 0, W, H);
+    if (bmp.close) bmp.close();
     const src = ctx.getImageData(0, 0, W, H);
+
+    // Remove marca d'água ANTES de gerar a versão reduzida, geometria e cor
+    let wmRemoved = false;
+    if (opts.watermark && opts.wmModel && g.PhotoWatermark) {
+      const wm = g.PhotoWatermark.removeFromImage(
+        { width: W, height: H, data: src.data },
+        opts.wmModel,
+        { srcScale: s }
+      );
+      wmRemoved = !!wm.removed;
+      if (wmRemoved) ctx.putImageData(src, 0, 0);
+    }
 
     const ss = Math.min(1, 900 / Math.max(W, H));
     const sw = Math.max(1, Math.round(W * ss)), sh = Math.max(1, Math.round(H * ss));
     const sc = env.createCanvas(sw, sh);
     const sctx = sc.getContext('2d', { willReadFrequently: true });
     sctx.imageSmoothingQuality = 'high';
-    sctx.drawImage(bmp, 0, 0, sw, sh);
+    sctx.drawImage(canvas, 0, 0, sw, sh);
     const small = sctx.getImageData(0, 0, sw, sh);
-    if (bmp.close) bmp.close();
 
     const r = g.PhotoCore.processImage(
       { width: W, height: H, data: src.data },
@@ -61,6 +73,7 @@
         crop: r.info.crop,
         confidence: det.confidence || null,
         color: !!r.info.color,
+        watermark: wmRemoved,
       },
     };
   }

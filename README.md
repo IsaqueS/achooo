@@ -6,6 +6,7 @@ Coloque todas as fotos de um imóvel e elas saem **endireitadas e tratadas** aut
 - **Corrigir perspectiva** — tira o efeito de "parede caindo" quando o celular estava inclinado para cima ou para baixo.
 - **Cor e luz** — estilo de foto de imobiliária: paredes claras e limpas, brancos sem estourar, cores fortes mais vivas e mais contraste local.
 - **Nitidez** — realce de detalhes que ignora o ruído fino.
+- **Remover marca d'água** — quando você envia 3 ou mais fotos com a mesma marca repetida, o app estima automaticamente a transparência e a cor da marca e reconstrói a imagem por baixo antes de endireitar e ajustar as cores.
 
 Tudo roda no navegador: nenhuma foto é enviada para servidor nenhum.
 Dá para baixar uma por uma ou todas num `.zip`.
@@ -31,6 +32,7 @@ python3 -m http.server 8000
 index.html          página
 css/style.css       visual
 fonts/              Chakra Petch Bold
+js/watermark.js     detecção e remoção automática de marca d'água em lote
 js/core.js          processamento (detecção de linhas, ponto de fuga, correção, cor)
 js/pipeline.js      abre a foto, chama o core, gera o JPG
 js/worker.js        roda o processamento fora da tela principal

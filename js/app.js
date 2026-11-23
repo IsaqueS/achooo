@@ -325,13 +325,13 @@
   // Configurações
   // ------------------------------------------------------------------
 
-  const S = { straighten: true, perspective: true, color: true, sharpen: true, maxSide: 4096, quality: 92, bgAnim: !reduceMotion };
+  const S = { straighten: true, perspective: true, color: true, sharpen: true, watermark: true, maxSide: 4096, quality: 92, bgAnim: !reduceMotion };
   try { Object.assign(S, JSON.parse(localStorage.getItem('achooo-opts') || '{}')); } catch (e) { /* sem storage */ }
   const saveS = () => { try { localStorage.setItem('achooo-opts', JSON.stringify(S)); } catch (e) { /* ok */ } };
 
   const optEls = {
     straighten: $('optStraighten'), perspective: $('optPerspective'),
-    color: $('optColor'), sharpen: $('optSharpen'),
+    color: $('optColor'), sharpen: $('optSharpen'), watermark: $('optWatermark'),
   };
   for (const k in optEls) {
     optEls[k].checked = !!S[k];
@@ -366,6 +366,88 @@
   let useMain = false;
   let mainBusy = false;
 
+  // Estado da detecção de marca d'água em lote
+  let wmModel = null;
+  let wmEstimatedCount = 0;
+  let wmAnalyzed = false;
+  let wmBusy = false;
+  let wmProgress = 0;
+  let wmStatusText = '';
+  let wmJobId = 0;
+  let wmSlot = null;
+  let wmPendingReprocess = null; // null = só os pendentes; 'all' = todos
+
+  function broadcastWatermark(model) {
+    wmModel = model || null;
+    for (const s of pool) s.w.postMessage({ type: 'setWatermark', model: wmModel });
+  }
+
+  function needsWatermarkAnalysis() {
+    if (!S.watermark || items.length < 3) return false;
+    if (!wmAnalyzed) return true;
+    if (!wmModel && items.length !== wmEstimatedCount) return true;
+    if (wmModel && wmEstimatedCount < 12 && items.length > wmEstimatedCount) return true;
+    return false;
+  }
+
+  function startWatermarkAnalysis(reprocessAll) {
+    if (!items.length) return;
+    const jobId = ++wmJobId;
+    wmBusy = true;
+    wmProgress = 0.04;
+    wmStatusText = 'Procurando marca d’água…';
+    wmPendingReprocess = reprocessAll ? 'all' : (wmPendingReprocess || 'queued');
+    updateStatus();
+
+    const files = items.map((it) => it.file);
+    if (!useMain && pool.length) {
+      const slot = pool.find((s) => !s.job && s !== wmSlot) || pool[0];
+      wmSlot = slot;
+      slot.w.postMessage({ type: 'analyzeWatermark', jobId, files });
+    } else {
+      runWatermarkAnalysisMain(jobId, files);
+    }
+  }
+
+  async function runWatermarkAnalysisMain(jobId, files) {
+    await new Promise((r) => setTimeout(r, 20));
+    try {
+      const model = await window.PhotoWatermark.analyzeBatchFiles(files, mainEnv, (p, text) => {
+        if (jobId !== wmJobId) return;
+        wmProgress = p;
+        wmStatusText = text || 'Procurando marca d’água…';
+        updateStatus();
+      });
+      finishWatermarkAnalysis(jobId, model);
+    } catch (e) {
+      finishWatermarkAnalysis(jobId, null);
+    }
+  }
+
+  function finishWatermarkAnalysis(jobId, model) {
+    if (jobId !== wmJobId) return;
+    wmBusy = false;
+    wmSlot = null;
+    wmProgress = 0;
+    wmStatusText = '';
+    wmAnalyzed = true;
+    wmEstimatedCount = items.length;
+    const prevHadModel = !!wmModel;
+    broadcastWatermark(model);
+    const mode = wmPendingReprocess;
+    wmPendingReprocess = null;
+
+    if (mode === 'all' || !!wmModel || prevHadModel) {
+      for (const it of items) enqueue(it);
+    } else {
+      for (const it of items) {
+        if (!it.blob && it.status !== 'error') enqueue(it);
+      }
+    }
+    if (viewer.open) renderViewer();
+    pump();
+  }
+
   function initPool() {
     const n = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1));
     try {
@@ -382,11 +464,14 @@
   }
 
   function fallbackToMain(slot) {
+    const wasWm = wmBusy;
     useMain = true;
+    wmSlot = null;
     if (slot && slot.job) { queue.unshift(slot.job); slot.job = null; }
     for (const s of pool) { if (s.job) { queue.unshift(s.job); s.job = null; } s.w.terminate(); }
     pool.length = 0;
-    pump();
+    if (wasWm) runWatermarkAnalysisMain(wmJobId, items.map((it) => it.file));
+    else pump();
   }
 
   function optsFor(item) {
@@ -395,6 +480,7 @@
       perspective: S.perspective && item.auto,
       color: S.color,
       sharpen: S.sharpen,
+      watermark: S.watermark && item.watermark,
       extraRoll: item.extraRoll,
       maxSide: S.maxSide,
       quality: S.quality / 100,
@@ -413,11 +499,12 @@
   }
 
   function pump() {
+    if (wmBusy) { updateStatus(); return; }
     if (useMain) {
       if (!mainBusy && queue.length) runMain(queue.shift());
     } else {
       for (const slot of pool) {
-        if (slot.job || !queue.length) continue;
+        if (slot.job || slot === wmSlot || !queue.length) continue;
         const job = queue.shift();
         slot.job = job;
         job.item.status = 'working';
@@ -429,6 +516,20 @@
   }
 
   function onWorkerMessage(slot, msg) {
+    if (msg.type === 'wmProgress') {
+      if (msg.jobId === wmJobId) {
+        wmProgress = msg.progress;
+        wmStatusText = msg.text || 'Procurando marca d’água…';
+        updateStatus();
+      }
+      return;
+    }
+    if (msg.type === 'wmDone') {
+      if (wmSlot === slot) wmSlot = null;
+      if (!msg.ok && msg.code === 'NO_OFFSCREEN') { fallbackToMain(slot); return; }
+      finishWatermarkAnalysis(msg.jobId, msg.ok ? msg.model : null);
+      return;
+    }
     const job = slot.job;
     slot.job = null;
     if (!job) return pump();
@@ -449,7 +550,9 @@
     updateStatus();
     await new Promise((r) => setTimeout(r, 30)); // deixa a tela atualizar
     try {
-      const res = await window.runPipeline(job.item.file, optsFor(job.item), mainEnv);
+      const o = optsFor(job.item);
+      o.wmModel = o.watermark ? wmModel : null;
+      const res = await window.runPipeline(job.item.file, o, mainEnv);
       finish(job, { ok: true, ...res });
     } catch (err) {
       finish(job, { ok: false, code: err.code || 'FAIL', error: String(err.message || err) });
@@ -484,7 +587,14 @@
   let reprocessTimer = null;
   function scheduleReprocessAll() {
     clearTimeout(reprocessTimer);
-    reprocessTimer = setTimeout(() => { for (const it of items) enqueue(it); }, 250);
+    reprocessTimer = setTimeout(() => {
+      if (!items.length) return;
+      if (needsWatermarkAnalysis()) {
+        startWatermarkAnalysis(true);
+      } else {
+        for (const it of items) enqueue(it);
+      }
+    }, 250);
   }
 
   // ------------------------------------------------------------------
@@ -495,20 +605,27 @@
     const files = [...fileList].filter((f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(f.name));
     if (!files.length) return;
     files.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { numeric: true }));
+    const added = [];
     for (const file of files) {
       const item = {
         id: nextId++, file, name: file.name, status: 'queued', version: 0,
-        auto: true, extraRoll: 0, blob: null, url: null, thumbUrl: null,
+        auto: true, watermark: true, extraRoll: 0, blob: null, url: null, thumbUrl: null,
         srcUrl: URL.createObjectURL(file), info: null, error: null,
       };
       items.push(item);
+      added.push(item);
       item.el = buildCard(item);
       $('grid').appendChild(item.el);
-      enqueue(item);
+      updateCard(item);
     }
     $('drop').hidden = true;
     $('work').hidden = false;
     selectTab(tabs[0]);
+    if (needsWatermarkAnalysis()) {
+      startWatermarkAnalysis(false);
+    } else {
+      for (const it of added) enqueue(it);
+    }
     updateStatus();
   }
 
@@ -519,7 +636,17 @@
     for (const u of [item.url, item.thumbUrl, item.srcUrl]) if (u) URL.revokeObjectURL(u);
     item.el.remove();
     items.splice(items.indexOf(item), 1);
-    if (!items.length) { $('drop').hidden = false; $('work').hidden = true; }
+    if (!items.length) {
+      wmJobId++;
+      wmBusy = false;
+      wmSlot = null;
+      wmAnalyzed = false;
+      wmEstimatedCount = 0;
+      wmPendingReprocess = null;
+      broadcastWatermark(null);
+      $('drop').hidden = false;
+      $('work').hidden = true;
+    }
     updateStatus();
   }
 
@@ -565,6 +692,7 @@
     const out = [];
     const i = item.info;
     if (!i) return out;
+    if (i.watermark) out.push(['Sem marca d’água', '']);
     if (i.roll) out.push(['Girada ' + fmt(i.roll) + '°', '']);
     if (i.pitch) out.push(['Perspectiva', '']);
     if (!i.roll && !i.pitch) out.push([item.auto && (S.straighten || S.perspective) ? 'Já estava reta' : 'Ângulo mantido', 'soft']);
@@ -601,6 +729,16 @@
     const errors = items.filter((i) => i.status === 'error').length;
     const pending = total - done - errors;
     $('tabCount').textContent = total ? String(total) : '';
+    if (wmBusy) {
+      $('bar').style.width = Math.max(4, wmProgress * 100) + '%';
+      $('statusText').textContent = wmStatusText || 'Procurando marca d’água…';
+      const zip = $('zip');
+      if (!zipping) {
+        zip.disabled = true;
+        zip.textContent = 'Aguarde…';
+      }
+      return;
+    }
     $('bar').style.width = total ? ((done + errors) / total) * 100 + '%' : '0';
     let txt;
     if (!total) txt = '';
@@ -700,12 +838,15 @@
     paintRange($('vRoll'));
     $('vRollOut').textContent = (item.extraRoll > 0 ? '+' : item.extraRoll < 0 ? '−' : '') + fmt(item.extraRoll) + '°';
     $('vAuto').checked = item.auto;
+    $('vWmWrap').hidden = !wmModel || !S.watermark;
+    $('vWm').checked = item.watermark;
     $('vDownload').disabled = !item.blob;
 
     const parts = [];
     const i = item.info;
     if (item.status === 'error') parts.push(item.error);
     else if (i) {
+      if (i.watermark) parts.push('marca d’água removida');
       if (i.roll) parts.push(`Endireitada ${fmt(i.roll)}°`);
       if (i.pitch) parts.push(`perspectiva corrigida (${fmt(i.pitch)}°)`);
       if (!i.roll && !i.pitch) {
@@ -784,6 +925,13 @@
     const it = items[vIdx];
     if (!it) return;
     it.auto = e.target.checked;
+    enqueue(it, true);
+    renderViewer();
+  });
+  $('vWm').addEventListener('change', (e) => {
+    const it = items[vIdx];
+    if (!it) return;
+    it.watermark = e.target.checked;
     enqueue(it, true);
     renderViewer();
   });
