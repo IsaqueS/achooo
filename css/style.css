@@ -322,22 +322,8 @@ kbd {
   max-width: 680px;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: var(--radius-full);
-  background: #ffffff;
-  border: 1px solid rgba(140, 8, 8, 0.16);
-  color: var(--cor-primaria);
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: var(--shadow-sm);
-}
-
 .hero-title {
-  margin: 16px 0 12px;
+  margin: 0 0 12px;
   font-size: clamp(28px, 4.2vw, 44px);
   font-weight: 700;
   letter-spacing: -0.028em;
@@ -977,6 +963,7 @@ input[type="range"]::-moz-range-thumb {
   gap: 8px 20px;
 }
 .foot strong { color: var(--text-primary); font-weight: 600; }
+.foot-privacy { font-size: 12px; color: var(--text-muted); }
 
 /* ---------- Visualizador Lightbox ---------- */
 .viewer {
